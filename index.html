@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anotai — Lista de compras inteligente</title>
+<style>
+:root{
+  --red:#ef1740;--red2:#ff3158;--pink:#ffe8ed;--soft:#fff7f8;
+  --text:#15151a;--muted:#74747c;--line:#ececef;--white:#fff;
+  --shadow:0 12px 35px rgba(40,10,20,.10);--radius:24px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);background:linear-gradient(135deg,#fff,#fff0f3);min-height:100vh}
+button,input,select{font:inherit}button{cursor:pointer}
+.auth-screen{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#fff,#ffe8ed)}
+.auth-card{width:min(430px,100%);background:#fff;border-radius:30px;padding:30px;box-shadow:0 25px 70px rgba(40,10,20,.15);text-align:center;border:1px solid #f5e2e6}
+.auth-logo{width:68px;height:68px;border-radius:21px;background:var(--red);color:#fff;display:grid;place-items:center;font-size:34px;margin:0 auto 15px;box-shadow:0 10px 25px #ef174044}
+.auth-card h1{margin:0;font-size:27px}.auth-card h1 span{color:var(--red)}
+.auth-card>p{color:var(--muted);font-size:14px;margin:8px 0 20px}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;background:#fff1f4;border-radius:13px;padding:4px;margin-bottom:18px}
+.auth-tab{border:0;background:transparent;padding:10px;border-radius:10px;font-weight:700;color:var(--muted)}
+.auth-tab.active{background:#fff;color:var(--red);box-shadow:0 3px 10px #0000000d}
+.auth-field{text-align:left;margin:12px 0}.auth-field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+.auth-field input{width:100%;padding:13px;border:1px solid #e7e7eb;border-radius:13px;outline:0}
+.auth-field input:focus{border-color:var(--red);box-shadow:0 0 0 3px #ef174014}
+.auth-submit{width:100%;border:0;border-radius:15px;background:var(--red);color:#fff;padding:14px;font-weight:800;font-size:15px;margin-top:5px}
+.auth-message{min-height:20px!important;margin:12px 0 0!important;font-size:13px!important;color:var(--red)}
+.app{max-width:1180px;margin:auto;padding:22px}
+header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:12px 4px 24px}
+.logo{display:flex;align-items:center;gap:12px;font-weight:900;font-size:24px}
+.logo-badge{width:48px;height:48px;border-radius:15px;background:var(--red);color:#fff;display:grid;place-items:center;font-size:26px;box-shadow:0 8px 20px #ef174044}
+.header-actions{display:flex;gap:10px;align-items:center}.icon-btn{border:0;background:#fff;border-radius:14px;width:44px;height:44px;box-shadow:var(--shadow);font-size:20px}
+.user-name{font-size:13px;font-weight:700;color:var(--red);background:#fff1f4;padding:10px 12px;border-radius:12px}
+.hero{background:linear-gradient(120deg,#ef1740,#ff3459);color:#fff;border-radius:32px;padding:28px;display:flex;align-items:center;justify-content:space-between;gap:25px;box-shadow:0 20px 45px #ef174033;overflow:hidden;position:relative}
+.hero:after{content:"";position:absolute;width:280px;height:280px;border-radius:50%;right:-80px;top:-100px;background:#ffffff18}
+.hero h1{margin:0 0 7px;font-size:clamp(27px,4vw,42px);line-height:1.05}.hero p{margin:0;color:#ffeef2}.hero .hero-icon{font-size:90px;filter:drop-shadow(0 12px 12px #8d001d55);z-index:1}
+.layout{display:grid;grid-template-columns:1fr 340px;gap:22px;margin-top:22px}
+.card{background:#fff;border:1px solid #f1e7e9;border-radius:var(--radius);box-shadow:var(--shadow)}.main-card{padding:22px}.side{padding:22px;height:max-content;position:sticky;top:16px}
+.search{display:flex;align-items:center;gap:10px;background:#fafafa;border:1px solid var(--line);border-radius:16px;padding:12px 15px;margin-bottom:18px}.search input{border:0;outline:0;background:transparent;width:100%;font-size:15px}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin:5px 0 12px}.section-title h2{font-size:18px;margin:0}.small{font-size:13px;color:var(--muted)}
+.progress{height:9px;background:#f4dfe3;border-radius:99px;overflow:hidden}.progress>div{height:100%;background:var(--red);border-radius:99px;transition:.25s}
+.list{display:flex;flex-direction:column}.item{display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}.item:last-child{border-bottom:0}
+.item-img{width:48px;height:48px;border-radius:13px;background:#f7f1f2;display:grid;place-items:center;font-size:25px}.item h3{font-size:15px;margin:0 0 3px}.item p{margin:0;color:var(--muted);font-size:13px}
+.qty{display:flex;align-items:center;gap:5px}.qty button{width:31px;height:31px;border:1px solid var(--line);background:#fff;border-radius:9px}.qty span{min-width:22px;text-align:center;font-weight:700}
+.check{width:28px;height:28px;border-radius:8px;border:2px solid var(--red);background:#fff;color:#fff;display:grid;place-items:center;font-weight:900}.check.done{background:var(--red)}
+.done-text{opacity:.55;text-decoration:line-through}
+.add{width:100%;border:0;border-radius:17px;background:var(--red);color:#fff;padding:15px 18px;font-weight:800;font-size:16px;box-shadow:0 9px 20px #ef174033}.secondary{background:#fff;color:var(--red);border:1px solid #ffd0d8;box-shadow:none}
+.tabs{display:flex;gap:7px;margin:16px 0}.tab{border:1px solid var(--line);background:#fff;padding:9px 13px;border-radius:12px;font-size:13px}.tab.active{background:var(--red);color:#fff;border-color:var(--red)}
+.categories{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}.cat{padding:14px;border:1px solid var(--line);border-radius:17px;background:#fff;display:flex;align-items:center;gap:10px;text-align:left}.cat span:first-child{font-size:24px}.cat b{font-size:13px}.cat small{display:block;color:var(--muted);margin-top:2px}
+.side h2{margin:0 0 4px}.field{margin:13px 0}.field label{font-size:13px;font-weight:700;display:block;margin-bottom:7px}.field input,.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:13px;outline:none;background:#fff}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.empty{text-align:center;padding:35px 10px;color:var(--muted)}.footer-note{text-align:center;color:var(--muted);font-size:12px;padding:22px}
+.modal{position:fixed;inset:0;background:#17050a66;display:none;align-items:center;justify-content:center;padding:18px;z-index:10}.modal.open{display:flex}.modal-box{background:#fff;border-radius:26px;width:min(480px,100%);padding:24px;box-shadow:0 30px 80px #0003}.modal-head{display:flex;justify-content:space-between;align-items:center}.close{border:0;background:#f7f7f8;border-radius:12px;width:38px;height:38px}
+/* Notificações e status da lista */
+.notify-card{margin-top:16px;padding:16px;border:1px solid #f0d7dc;border-radius:18px;background:#fff8fa}
+.notify-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.notify-title{font-weight:800;margin:0 0 4px}
+.notify-desc{font-size:12px;color:#777;line-height:1.45}
+.notify-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.notify-btn{border:0;border-radius:12px;padding:10px 12px;background:#ef1740;color:#fff;font-weight:700;cursor:pointer}
+.notify-btn.secondary{background:#fff;color:#ef1740;border:1px solid #ef1740}
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;background:#ffe8ed;color:#c81034;font-size:12px;font-weight:800}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#17171b;color:#fff;padding:12px 18px;border-radius:13px;opacity:0;pointer-events:none;transition:.25s;z-index:20}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.side{position:static}.hero .hero-icon{font-size:64px}}
+@media(max-width:520px){.app{padding:12px}.hero{padding:22px;border-radius:24px}.hero .hero-icon{display:none}.main-card,.side{padding:16px}.item{grid-template-columns:42px 1fr auto}.item-img{width:42px;height:42px}.header-actions{gap:5px}.user-name{display:none}.icon-btn{width:40px;height:40px}}
+
+/* Melhorias Anotai — mesma identidade visual */
+.item-actions{display:flex;align-items:center;gap:6px;margin-left:auto}
+.icon-btn{width:34px;height:34px;border:1px solid #f1d5db;background:#fff;border-radius:10px;cursor:pointer;font-size:15px}
+.icon-btn:hover{background:#ffe8ed}
+.item-main{min-width:0}
+.item-name{overflow:hidden;text-overflow:ellipsis}
+.empty-state{padding:30px 18px;text-align:center;color:#777}
+.empty-state .empty-icon{font-size:38px;margin-bottom:8px}
+.category-count{font-size:11px;background:#ffe8ed;color:#c81034;padding:3px 7px;border-radius:999px;font-weight:800;margin-left:4px}
+.quick-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.quick-action{border:1px solid #f0d7dc;background:#fff;border-radius:12px;padding:9px 12px;color:#555;cursor:pointer;font-weight:700}
+.quick-action:hover{background:#fff8fa}
+.item-note{font-size:11px;color:#888;margin-top:3px}
+
+</style>
+</head>
+<body>
+
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">🛒</div>
+    <h1>Bem-vindo ao <span>Anotai</span></h1>
+    <p>Crie sua conta para organizar suas listas de compras.</p>
+    <div class="auth-tabs">
+      <button id="signupTab" class="auth-tab active" onclick="showAuth('signup')">Criar conta</button>
+      <button id="loginTab" class="auth-tab" onclick="showAuth('login')">Entrar</button>
+    </div>
+    <div id="signupForm">
+      <div class="auth-field"><label>Nome</label><input id="signupName" placeholder="Seu nome"></div>
+      <div class="auth-field"><label>E-mail</label><input id="signupEmail" type="email" placeholder="seuemail@email.com"></div>
+      <div class="auth-field"><label>Senha</label><input id="signupPassword" type="password" placeholder="Crie uma senha"></div>
+      <div class="auth-field"><label>Confirmar senha</label><input id="signupConfirm" type="password" placeholder="Digite a senha novamente"></div>
+      <button class="auth-submit" onclick="signup()">Criar minha conta</button>
+    </div>
+    <div id="loginForm" style="display:none">
+      <div class="auth-field"><label>E-mail</label><input id="loginEmail" type="email" placeholder="seuemail@email.com"></div>
+      <div class="auth-field"><label>Senha</label><input id="loginPassword" type="password" placeholder="Sua senha"></div>
+      <button class="auth-submit" onclick="login()">Entrar</button>
+    </div>
+    <p id="authMessage" class="auth-message"></p>
+  </div>
+</div>
+
+<div class="app" id="appContent" style="display:none">
+  <header>
+    <div class="logo"><div class="logo-badge">🛒</div><span>Anotai</span></div>
+    <div class="header-actions">
+      <span id="userName" class="user-name"></span>
+      <button class="icon-btn" title="Compartilhar" onclick="shareList()">↗</button>
+      <button class="icon-btn" title="Adicionar" onclick="openModal()">＋</button>
+      <button class="icon-btn" title="Sair" onclick="logout()">↪</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div><h1>Olá! 👋<br>O que vamos comprar hoje?</h1><p>Organize sua lista, marque o que já comprou<br>e compre sem esquecer nada.</p></div>
+    <div class="hero-icon">🛍️</div>
+  </section>
+
+  <div class="layout">
+    <main class="card main-card">
+      <div class="section-title"><div><h2>Mercado da semana</h2><span class="small" id="countText">0 itens</span></div><button class="icon-btn" onclick="openModal()">＋</button></div>
+      <div class="search">🔎<input id="search" placeholder="Buscar produto..." oninput="render()"></div>
+      <div class="tabs">
+        <button class="tab active" data-filter="all" onclick="setFilter('all',this)">Todos</button>
+        <button class="tab" data-filter="pending" onclick="setFilter('pending',this)">Pendentes</button>
+        <button class="tab" data-filter="done" onclick="setFilter('done',this)">Comprados</button>
+      </div>
+      <div class="section-title"><h2>Itens da lista</h2><span class="small" id="progressText"></span></div>
+      <div class="progress"><div id="progressBar"></div></div>
+      <div id="purchaseStatus"></div>
+      <div class="quick-actions">
+        <button class="quick-action" onclick="addQuickProduct('Arroz','Alimentos')">+ Arroz</button>
+        <button class="quick-action" onclick="addQuickProduct('Leite','Lacticínios')">+ Leite</button>
+        <button class="quick-action" onclick="addQuickProduct('Pão','Padaria')">+ Pão</button>
+        <button class="quick-action" onclick="addQuickProduct('Sabão','Limpeza')">+ Sabão</button>
+      </div>
+      <div id="list" class="list"></div>
+      <button class="add" style="margin-top:16px" onclick="openModal()">＋ Adicionar produto</button>
+    </main>
+
+    <aside class="card side">
+      <h2>Lista inteligente ✨</h2>
+      <p class="small">Adicione produtos com quantidade e categoria para deixar suas compras mais organizadas.</p>
+      <button class="add" onclick="shareList()">↗ Compartilhar lista</button>
+      <div class="section-title" style="margin-top:22px"><h2>Categorias</h2></div>
+      <div class="categories">
+        <button class="cat" onclick="filterCategory('Alimentos')"><span>🥫</span><div><b>Alimentos</b><small id="catAlimentos">0 itens</small></div></button>
+        <button class="cat" onclick="filterCategory('Bebidas')"><span>🥤</span><div><b>Bebidas</b><small id="catBebidas">0 itens</small></div></button>
+        <button class="cat" onclick="filterCategory('Higiene')"><span>🧴</span><div><b>Higiene</b><small id="catHigiene">0 itens</small></div></button>
+        <button class="cat" onclick="filterCategory('Limpeza')"><span>🧽</span><div><b>Limpeza</b><small id="catLimpeza">0 itens</small></div></button>
+      </div>
+      <button class="add secondary" style="margin-top:12px" onclick="clearDone()">Limpar comprados</button>
+      <div class="notify-card">
+        <div class="notify-row">
+          <div>
+            <div class="notify-title">🔔 Lembrete da lista</div>
+            <div class="notify-desc">Receba um aviso para lembrar que você ainda tem produtos pendentes.</div>
+          </div>
+          <span id="notifyStatus" class="status-badge">Desativado</span>
+        </div>
+        <div class="notify-actions">
+          <button class="notify-btn" onclick="enableNotifications()">Ativar lembrete</button>
+          <button class="notify-btn secondary" onclick="sendTestNotification()">Testar</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <div class="footer-note">Anotai — sua lista, do seu jeito. ❤️<br><span class="small">Os lembretes funcionam enquanto o site estiver aberto no navegador.</span></div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="modal-head"><div><h2 style="margin:0">Adicionar produto</h2><span class="small">Coloque tudo o que precisa comprar.</span></div><button class="close" onclick="closeModal()">✕</button></div>
+    <div class="field"><label>Nome do produto</label><input id="name" placeholder="Ex.: Macarrão espaguete"></div>
+    <div class="row">
+      <div class="field"><label>Quantidade</label><input id="qty" type="number" min="1" value="1"></div>
+      <div class="field"><label>Unidade</label><select id="unit"><option>Unidade</option><option>Pacote</option><option>Kg</option><option>Litro</option><option>Caixa</option><option>2 Litros</option><option>1 Litro</option><option>500 ml</option></select></div>
+    </div>
+    <div class="field"><label>Categoria</label><select id="category"><option>Alimentos</option><option>Bebidas</option><option>Higiene</option><option>Limpeza</option></select></div>
+    <div class="field"><label>Observação</label><input id="note" placeholder="Ex.: marca preferida"></div>
+    <button class="add" onclick="addProduct()">＋ Adicionar à lista</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const icons={Alimentos:"🥫",Bebidas:"🥤",Higiene:"🧴",Limpeza:"🧽"};
+const DEFAULT_ITEMS=[
+{id:1,name:"Arroz",qty:1,unit:"Pacote",category:"Alimentos",done:false,note:""},
+{id:2,name:"Feijão",qty:1,unit:"Kg",category:"Alimentos",done:false,note:""},
+{id:3,name:"Óleo de soja",qty:2,unit:"Unidade",category:"Alimentos",done:true,note:""},
+{id:4,name:"Leite",qty:3,unit:"Litro",category:"Alimentos",done:true,note:""},
+{id:5,name:"Macarrão",qty:2,unit:"Pacote",category:"Alimentos",done:false,note:""},
+{id:6,name:"Açúcar",qty:1,unit:"Kg",category:"Alimentos",done:false,note:""},
+{id:7,name:"Coca-Cola",qty:1,unit:"2 Litros",category:"Bebidas",done:false,note:""},
+{id:8,name:"Guaraná",qty:1,unit:"2 Litros",category:"Bebidas",done:false,note:""},
+{id:9,name:"Suco",qty:1,unit:"1 Litro",category:"Bebidas",done:false,note:""},
+{id:10,name:"Água",qty:6,unit:"500 ml",category:"Bebidas",done:false,note:""}
+];
+
+let filter="all",categoryFilter=null;
+const USERS_KEY="anotai-users";
+function getUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY)||"[]")}catch{return[]}}
+function currentEmail(){return localStorage.getItem("anotai-current-user")}
+function itemsKey(){return "anotai-items-"+(currentEmail()||"guest")}
+function getItems(){try{const saved=localStorage.getItem(itemsKey());return saved?JSON.parse(saved):DEFAULT_ITEMS.map(x=>({...x}))}catch{return DEFAULT_ITEMS.map(x=>({...x}))}}
+let items=[];
+let reminderTimer=null;
+let notificationSettings={enabled:false,intervalHours:4};
+
+function reminderKey(){return "anotai-notification-settings-"+(currentEmail()||"guest")}
+function loadNotificationSettings(){
+  try{
+    const saved=localStorage.getItem(reminderKey());
+    notificationSettings=saved?{...notificationSettings,...JSON.parse(saved)}:{enabled:false,intervalHours:4};
+  }catch{notificationSettings={enabled:false,intervalHours:4}}
+}
+function saveNotificationSettings(){
+  localStorage.setItem(reminderKey(),JSON.stringify(notificationSettings));
+}
+function updateNotificationStatus(){
+  const el=document.getElementById("notifyStatus");
+  if(!el)return;
+  el.textContent=notificationSettings.enabled?"Ativado":"Desativado";
+}
+function stopReminder(){
+  if(reminderTimer){clearInterval(reminderTimer);reminderTimer=null}
+}
+function startReminder(){
+  stopReminder();
+  if(!notificationSettings.enabled)return;
+  const ms=Math.max(1,Number(notificationSettings.intervalHours)||4)*60*60*1000;
+  reminderTimer=setInterval(()=>{
+    const pending=items.filter(x=>!x.done);
+    if(pending.length) showBrowserNotification("🛒 Não esqueça sua lista",`Você ainda tem ${pending.length} ${pending.length===1?"produto pendente":"produtos pendentes"}.`);
+  },ms);
+}
+async function enableNotifications(){
+  if(!("Notification" in window)){
+    showToast("Seu navegador não permite notificações neste arquivo.");
+    return;
+  }
+  const permission=await Notification.requestPermission();
+  if(permission!=="granted"){
+    showToast("Permissão de notificação não autorizada.");
+    return;
+  }
+  const value=prompt("A cada quantas horas você quer receber o lembrete?",String(notificationSettings.intervalHours||4));
+  if(value!==null){
+    const hours=Math.max(1,Number(value)||4);
+    notificationSettings={enabled:true,intervalHours:hours};
+    saveNotificationSettings();
+    updateNotificationStatus();
+    startReminder();
+    showBrowserNotification("🔔 Lembretes ativados","O Anotai vai lembrar você da lista enquanto o site estiver aberto.");
+    showToast("Lembrete ativado!");
+  }
+}
+function showBrowserNotification(title,body){
+  if("Notification" in window && Notification.permission==="granted"){
+    new Notification(title,{body});
+  }
+}
+function sendTestNotification(){
+  if(!("Notification" in window)){
+    showToast("Seu navegador não suporta notificações.");
+    return;
+  }
+  if(Notification.permission!=="granted"){
+    showToast("Clique em “Ativar lembrete” primeiro.");
+    return;
+  }
+  showBrowserNotification("🛒 Anotai","Esta é uma notificação de teste do Anotai.");
+}
+function save(){localStorage.setItem(itemsKey(),JSON.stringify(items))}
+function showAuth(type){
+  document.getElementById("signupForm").style.display=type==="signup"?"block":"none";
+  document.getElementById("loginForm").style.display=type==="login"?"block":"none";
+  document.getElementById("signupTab").classList.toggle("active",type==="signup");
+  document.getElementById("loginTab").classList.toggle("active",type==="login");
+  document.getElementById("authMessage").textContent="";
+}
+function authMsg(msg){document.getElementById("authMessage").textContent=msg}
+function signup(){
+  const name=document.getElementById("signupName").value.trim();
+  const email=document.getElementById("signupEmail").value.trim().toLowerCase();
+  const password=document.getElementById("signupPassword").value;
+  const confirm=document.getElementById("signupConfirm").value;
+  if(!name||!email||!password||!confirm)return authMsg("Preencha todos os campos.");
+  if(!email.includes("@"))return authMsg("Digite um e-mail válido.");
+  if(password.length<6)return authMsg("A senha deve ter pelo menos 6 caracteres.");
+  if(password!==confirm)return authMsg("As senhas não são iguais.");
+  const users=getUsers();
+  if(users.some(u=>u.email===email)){authMsg("Este e-mail já possui cadastro.");showAuth("login");return}
+  users.push({name,email,password});
+  localStorage.setItem(USERS_KEY,JSON.stringify(users));
+  localStorage.setItem("anotai-current-user",email);
+  startApp({name,email});
+}
+function login(){
+  const email=document.getElementById("loginEmail").value.trim().toLowerCase();
+  const password=document.getElementById("loginPassword").value;
+  const user=getUsers().find(u=>u.email===email&&u.password===password);
+  if(!user)return authMsg("E-mail ou senha incorretos.");
+  localStorage.setItem("anotai-current-user",email);startApp(user);
+}
+function startApp(user){
+  items=getItems();
+  loadNotificationSettings();
+  document.getElementById("authScreen").style.display="none";
+  document.getElementById("appContent").style.display="block";
+  document.getElementById("userName").textContent="Olá, "+user.name.split(" ")[0]+" 👋";
+  render();
+  updateNotificationStatus();
+  startReminder();
+}
+function logout(){
+  stopReminder();
+  localStorage.removeItem("anotai-current-user");
+  document.getElementById("appContent").style.display="none";
+  document.getElementById("authScreen").style.display="flex";
+  showAuth("login");
+}
+function checkSession(){
+  const email=currentEmail(),user=getUsers().find(u=>u.email===email);
+  if(user)startApp(user);
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function render(){
+  const search=document.getElementById("search");if(!search)return;
+  const q=search.value.toLowerCase();
+  let shown=items.filter(x=>x.name.toLowerCase().includes(q));
+  if(filter==="pending")shown=shown.filter(x=>!x.done);
+  if(filter==="done")shown=shown.filter(x=>x.done);
+  if(categoryFilter)shown=shown.filter(x=>x.category===categoryFilter);
+  document.getElementById("list").innerHTML=shown.length?shown.map(x=>`
+    <div class="item">
+      <div class="item-img">${icons[x.category]||"🛒"}</div>
+      <div class="${x.done?"done-text":""}">
+        <h3>${escapeHtml(x.name)}</h3>
+        <p>${x.qty} ${escapeHtml(x.unit)}${x.note?" • "+escapeHtml(x.note):""}</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px">
+        <div class="qty"><button onclick="changeQty(${x.id},-1)">−</button><span>${x.qty}</span><button onclick="changeQty(${x.id},1)">+</button></div>
+        <button class="check ${x.done?"done":""}" onclick="toggle(${x.id})">${x.done?"✓":""}</button>
+      </div>
+    </div>`).join(""):`<div class="empty">Nenhum produto encontrado.<br><span class="small">Adicione um item para começar.</span></div>`;
+  const done=items.filter(x=>x.done).length,total=items.length,pct=total?(done/total)*100:0;
+  document.getElementById("progressBar").style.width=pct+"%";
+  document.getElementById("progressText").textContent=`${done} de ${total} comprados`;
+  document.getElementById("countText").textContent=`${total} ${total===1?"item":"itens"}`;
+  const status=document.getElementById("purchaseStatus");
+  if(status){
+    if(total>0 && done===total){
+      status.innerHTML='<div class="notify-card" style="margin:12px 0">🎉 <b>Você já comprou tudo!</b><div class="notify-desc">Todos os produtos da sua lista estão marcados como comprados.</div></div>';
+    }else if(done>0){
+      status.innerHTML=`<div class="small" style="margin:10px 0 4px">✅ Você já comprou ${done} ${done===1?"item":"itens"}.</div>`;
+    }else{
+      status.innerHTML="";
+    }
+  }
+  ["Alimentos","Bebidas","Higiene","Limpeza"].forEach(c=>{const e=document.getElementById("cat"+c);if(e)e.textContent=items.filter(x=>x.category===c).length+" itens"});
+}
+function toggle(id){
+  const item=items.find(i=>i.id===id);
+  if(!item)return;
+  item.done=!item.done;
+  save();
+  render();
+  if(item.done){
+    showToast("✅ "+item.name+" já foi comprado!");
+    const pending=items.filter(x=>!x.done).length;
+    if(items.length && pending===0){
+      setTimeout(()=>{
+        showToast("🎉 Lista concluída! Você já comprou tudo.");
+        showBrowserNotification("🎉 Lista concluída!","Você já marcou todos os produtos como comprados.");
+      },500);
+    }
+  }else{
+    showToast("↩ "+item.name+" voltou para a lista.");
+  }
+}
+function changeQty(id,d){const item=items.find(i=>i.id===id);if(!item)return;item.qty=Math.max(1,item.qty+d);save();render()}
+function setFilter(f,el){filter=f;categoryFilter=null;document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));el.classList.add("active");render()}
+function filterCategory(c){categoryFilter=c;filter="all";document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));document.querySelector('[data-filter="all"]').classList.add("active");showToast("Categoria: "+c);render()}
+function openModal(){document.getElementById("modal").classList.add("open");setTimeout(()=>document.getElementById("name").focus(),100)}
+function closeModal(){document.getElementById("modal").classList.remove("open")}
+function addProduct(){
+  const name=document.getElementById("name").value.trim();if(!name){showToast("Digite o nome do produto");return}
+  const qty=Math.max(1,+document.getElementById("qty").value||1),unit=document.getElementById("unit").value,category=document.getElementById("category").value,note=document.getElementById("note").value.trim();
+  items.push({id:Date.now(),name,qty,unit,category,done:false,note});save();render();closeModal();
+  document.getElementById("name").value="";document.getElementById("note").value="";document.getElementById("qty").value=1;showToast("Produto adicionado!");
+}
+
+function editProduct(id){
+  const item=items.find(x=>x.id===id);
+  if(!item)return;
+  const name=prompt("Nome do produto:",item.name);
+  if(name===null)return;
+  const clean=name.trim();
+  if(!clean){showToast("Digite um nome para o produto.");return;}
+  const note=prompt("Observação (opcional):",item.note||"");
+  item.name=clean;
+  if(note!==null)item.note=note.trim();
+  save(); render(); showToast("✏️ Produto atualizado!");
+}
+function deleteProduct(id){
+  const item=items.find(x=>x.id===id);
+  if(!item)return;
+  if(!confirm(`Excluir "${item.name}" da lista?`))return;
+  items=items.filter(x=>x.id!==id);
+  save(); render(); showToast("🗑️ Produto removido.");
+}
+function addQuickProduct(name,category){
+  const existing=items.find(x=>x.name.toLowerCase()===name.toLowerCase() && !x.done);
+  if(existing){
+    existing.qty=(Number(existing.qty)||1)+1;
+    save();render();showToast("➕ Quantidade atualizada!");
+    return;
+  }
+  items.push({id:Date.now()+Math.random(),name,qty:1,unit:"un",category:category||"Alimentos",note:"",done:false});
+  save();render();showToast("🛒 "+name+" adicionado!");
+}
+
+function clearDone(){items=items.filter(x=>!x.done);save();render();showToast("Itens comprados removidos")}
+async function shareList(){
+  const text="Minha lista de compras:\n"+items.map(x=>`${x.done?"✓":"○"} ${x.name} — ${x.qty} ${x.unit}`).join("\n");
+  if(navigator.share){try{await navigator.share({title:"Minha lista de compras",text})}catch{}}
+  else{try{await navigator.clipboard.writeText(text);showToast("Lista copiada!")}catch{showToast("Não foi possível copiar a lista.")}}
+}
+function showToast(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("show");clearTimeout(window.tt);window.tt=setTimeout(()=>e.classList.remove("show"),2200)}
+document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
+checkSession();
+</script>
+</body>
+</html>
